@@ -1,8 +1,9 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.messagebox
+import threading
 
-class View():
+class View(threading.Thread):
     # Reads file of allowed guesses into guess_list.
     with open("allowed_guesses.txt") as f:
         guess_list = f.read().splitlines()
@@ -10,15 +11,16 @@ class View():
     color_dict = {
          0: "#797c7e",
          1: "#c5b35d",
-         2: "76a866"
+         2: "#76a866"
     }
 
     def __init__(self) -> None:
         self.current_guess = ""
         self.label_list = []
+        threading.Thread.__init__(self=self)
 
 
-    def start_GUI(self, enter_button):
+    def start_GUI(self):
         """Generates the GUI at startup. Updates to GUI are handled 
            individually by other methods.
         """
@@ -31,28 +33,24 @@ class View():
         self.title = ttk.Label(text="wordle", master=self.frame)
         self.title.place(x=500, y=0)
 
-        # self.enter_button = ttk.Button(
-        #     text="Enter",
-        #     # width=10,
-        #     # height=3,
-        #     # bg="white",
-        #     # fg="black",
-        #     command=self.controller.control_guess)
-        # enter_button.config()
-        # enter_button.place(x=500, y=600)
-        enter_button.pack()
+        self.enter_button = ttk.Button(
+            text="Enter",
+            # width=10,
+            # height=3,
+            # bg="white",
+            # fg="black",
+            command=self.enter_guess)
+        self.enter_button.place(x=500, y=600)
 
         self.guess = tk.StringVar()
-        self.guess.trace("w", View.limit_guess_size)
+        self.guess.trace("w", self.limit_guess_size)
         self.word_input = ttk.Entry(textvariable=self.guess, master=self.frame)
         self.word_input.place(x=500, y=400)
 
         self.guess_labels()
 
-        # self.window.mainloop()
-        # return self.window
-
-
+    def run(self):
+        self.window.mainloop()
 
     def enter_guess(self):
             guess_input = self.word_input.get()
@@ -86,8 +84,10 @@ class View():
         j = 0   # Index representing position of letter in word.
         
         for ch in self.current_guess:
-            self.label_list[guess_num][j].configure(
+            self.label_list[guess_num-1][j].config(
                 text=ch.upper(),
-                background=self.color_dict[guessed_letters[ch]]
+                background=self.color_dict[guessed_letters[ch]],
+                foreground="white"
             )
+            j += 1
         self.window.mainloop()
