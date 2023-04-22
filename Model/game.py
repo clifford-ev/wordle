@@ -6,13 +6,11 @@ class Game:
         solution_list = f.read().splitlines()
 
     def __init__(self):
-        self.previous_guesses = list()  # Record of previous guesses for GUI.
         # Record of guessed letters for GUI. [0] = wrong letter; [1] = wrong
         # position; [2] = correct letter.
         self.guessed_letters = [0, 0, 0, 0, 0]
         self.guess_num = 0 # Number of guesses the player has made.
         self.solution = str()   # Correct answer generated at start.
-        self.solution_letters = set() # Set of letters in solution to make searching more efficient.
         self.previous_solutions = set()   # Indices of old solutions to avoid repeats.
 
     def set_solution(self):
@@ -27,9 +25,6 @@ class Game:
                 self.previous_solutions.add(i)
                 break
 
-        # Creates set of characters in solution.
-        self.solution_letters = {ch for ch in self.solution}
-
     def guess(self, guess):
         """Checks user guess and adds letters to guessed letters list, sorted by
         correctness (gren, yellow, grey).
@@ -42,40 +37,39 @@ class Game:
         """
         guess.lower()
         self.guess_num += 1
-        self.previous_guesses.append(guess)
         self.guessed_letters = [0, 0, 0, 0, 0]
 
-        solution_copy = self.solution   # Solution string that can be freely modified. 
+        solution_copy = [ch for ch in self.solution]   # Solution list that can be modified. 
 
         # Checks if player guessed correctly.
         if guess == self.solution:
             self.guessed_letters = [2, 2, 2, 2, 2]
             return True
 
-        # If the guess is wrong, the color of each letter (represented by an int) is 
-        # added to guessed_letters in the corresponding position.
-        for i in range(5):
-            if guess[i] == solution_copy[i]: # Correct (green) letters.
+        # If the guess is wrong, the color of each letter (represented by an int 0-2) 
+        # is added to guessed_letters in the corresponding position.
+        for i in range(5):  # Correct (green) letters are checked first.
+            if guess[i] == solution_copy[i]: 
                 self.guessed_letters[i] = 2
-                solution_copy = solution_copy[:i] + " " + solution_copy[i+1:]
+                # Letters are removed from solution_copy as checked to avoid overwriting.
+                solution_copy[i] = " "
 
 
         for i in range(5):
-            if guess[i] in solution_copy: # Wrong position (yellow) letters.
-                self.guessed_letters[i] = 1
-                j = solution_copy.find(guess[i])
-                solution_copy = solution_copy[:j] + " " + solution_copy[j+1:]
+            if not self.guessed_letters[i]:  # Only checks non-green letters.
+                if guess[i] in solution_copy: # Wrong position (yellow) letters.
+                    self.guessed_letters[i] = 1
+                    j = solution_copy.index(guess[i])  # Removes 1st occurence to account for doubles.
+                    solution_copy[j] = " "
 
-            elif not self.guessed_letters[i]:   # Wrong (grey) letters.
-                self.guessed_letters[i] = 0
+                else:   # Wrong (grey) letters.
+                    self.guessed_letters[i] = 0
 
         return False
 
     def new_game(self):
         """Resets all variables except for previous_solutions to prep for a new game.
         """
-        self.previous_guesses = list()
         self.guessed_letters = [0, 0, 0, 0, 0]
         self.solution = str()
-        self.solution_letters = set()
         self.guess_num = 0

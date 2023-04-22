@@ -1,10 +1,10 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-import tkinter.messagebox
-import sv_ttk
 from View.view import View
 
 class LabelManager(View):
+    """Creates and updates the labels that display current and previous guesses.
+    """
     def __init__(self, controller, main_gui) -> None:
         super().__init__(controller)
         self.main_gui = main_gui
@@ -25,13 +25,18 @@ class LabelManager(View):
                 self.label_list[i][j].place(x=(300 + 50*j), y=(100 + 50*i), anchor="center")  # Places labels.
 
     def update_guess_labels(self, guess_num, guessed_letters):
+        """Updates labels after user guesses.
+
+        Args:
+            guess_num (int): Represents which row to update
+            guessed_letters (list): List of int (0-2) for color of each letter
+        """
         j = 0   # Index representing position of letter in word.
         
-        for ch in self.main_gui.current_guess:
+        for ch in self.main_gui.current_guess:  # Updates each guess with the corresponding letter.
             self.label_list[guess_num-1][j].config(
                 text=ch.upper(),
                 background=self.color_dict[guessed_letters[j]],
                 foreground="white"
             )
             j += 1
-        # self.window.mainloop()
